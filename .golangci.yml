@@ -125,8 +125,11 @@ linters:
     - scopelint
     - structcheck
     - varcheck
-    # gomnd is disabled. 流石に厳しすぎる。
+    - gomnd # gomnd is disabled. 流石に厳しすぎる。
     - forbidigo # CLIツールなため
+    - exhaustruct # cobraと相性が悪い
+    - unparam # interfaceを実装しようする場合に怒られるのは不便
+    - depguard # cli tool なため
 
 
   # Enable presets.

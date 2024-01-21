@@ -20,7 +20,7 @@ lint: $(DEV_BIN)/golangci-lint
 	$(DEV_BIN)/golangci-lint run --config=.golangci.yml
 
 .PHONY: setup
-setup: $(DEV_BIN)/golangci-lint
+setup: $(DEV_BIN)/golangci-lint $(DEV_BIN)/wsl $(DEV_BIN)/cobra-cli
 
 $(DEV_BIN)/golangci-lint:
 	mkdir -p $(@D)
@@ -30,6 +30,10 @@ $(DEV_BIN)/golangci-lint:
 $(DEV_BIN)/wsl:
 	mkdir -p $(@D)
 	GOBIN=$(ABS_DEV_BIN) go install github.com/bombsimon/wsl/v4/cmd...@master
+
+$(DEV_BIN)/cobra-cli:
+	mkdir -p $(@D)
+	GOBIN=$(ABS_DEV_BIN) go install github.com/spf13/cobra-cli@latest
 
 .PHONY: clean
 clean:
