@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"strings"
 
@@ -25,8 +26,13 @@ type Config struct {
 }
 
 func (c *Config) send(str string) error {
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknown"
+	}
+
 	msg := slack.WebhookMessage{
-		Username:        "sender",
+		Username:        hostname,
 		IconEmoji:       "",
 		IconURL:         "",
 		Channel:         "",
@@ -41,7 +47,7 @@ func (c *Config) send(str string) error {
 		ReplyBroadcast:  false,
 	}
 
-	err := slack.PostWebhook(c.WebhookURL, &msg)
+	err = slack.PostWebhook(c.WebhookURL, &msg)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -91,13 +97,20 @@ func (e *Executor) initRoot() {
 
 // CLI init function.
 func (e *Executor) initSubcommands() {
-	subCmd := &cobra.Command{
+	send := &cobra.Command{
 		Use:   "send [args]",
 		Short: "send message",
 		Run:   e.send,
 	}
 
-	e.rootCmd.AddCommand(subCmd)
+	e.rootCmd.AddCommand(send)
+
+	report := &cobra.Command{
+		Use:   "report ",
+		Short: "report message",
+		Run:   e.Report,
+	}
+	e.rootCmd.AddCommand(report)
 }
 
 func (e *Executor) readConfig() {
@@ -209,6 +222,49 @@ func (e *Executor) send(cmd *cobra.Command, args []string) {
 		cmd.PrintErrln(err)
 
 		os.Exit(1)
+	}
+}
+
+func (e *Executor) Report(cmd *cobra.Command, _ []string) {
+	nics, err := net.Interfaces()
+	if err != nil {
+		cmd.PrintErrln(err)
+
+		return
+	}
+
+	result := make(map[string][]string)
+
+	for _, nic := range nics {
+		if nic.Flags&net.FlagUp == 0 {
+			continue
+		}
+
+		addrs, err := nic.Addrs()
+		if err != nil {
+			cmd.PrintErrln(err)
+
+			return
+		}
+
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				result[nic.Name] = append(result[nic.Name], ipnet.String())
+			}
+		}
+	}
+
+	yml, err := yaml.Marshal(result)
+	if err != nil {
+		cmd.PrintErrln(err)
+
+		return
+	}
+
+	if err := e.SlackConfig.send(string(yml)); err != nil {
+		cmd.PrintErrln(err)
+
+		return
 	}
 }
 
