@@ -57,7 +57,7 @@ jobs:
         with:
           go-version: ${{env.GO_VERSION}}
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v4
+        uses: actions/upload-artifact@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
