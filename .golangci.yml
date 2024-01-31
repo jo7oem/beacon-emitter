@@ -152,3 +152,10 @@ linters:
   # Run only fast linters from enabled linters set (first run won't be fast)
   # Default: false
   # fast: true
+
+linters-settings:
+  funlen:
+    # Checks the number of lines in a function.
+    # If lower than 0, disable the check.
+    # Default: 60
+    lines: 100
