@@ -48,7 +48,7 @@ jobs:
 
   upload:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.ref_type == 'tag'
     needs: [build]
     steps:
       - uses: actions/checkout@v3
@@ -57,7 +57,7 @@ jobs:
         with:
           go-version: ${{env.GO_VERSION}}
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
