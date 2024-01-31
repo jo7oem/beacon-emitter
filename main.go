@@ -23,16 +23,25 @@ const (
 type Config struct {
 	SlackAPIType string `yaml:"slackApiType"`
 	WebhookURL   string `yaml:"webhookUrl"`
+	Username     string `yaml:"username"`
+	Verbose      bool   `yaml:"verbose"`
 }
 
 func (c *Config) send(str string) error {
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "unknown"
+	if c.Username == "" {
+		if hostname, err := os.Hostname(); err != nil {
+			c.Username = "unknown"
+		} else {
+			c.Username = hostname
+		}
+	}
+
+	if c.Verbose {
+		fmt.Println(str)
 	}
 
 	msg := slack.WebhookMessage{
-		Username:        hostname,
+		Username:        c.Username,
 		IconEmoji:       "",
 		IconURL:         "",
 		Channel:         "",
@@ -47,7 +56,7 @@ func (c *Config) send(str string) error {
 		ReplyBroadcast:  false,
 	}
 
-	err = slack.PostWebhook(c.WebhookURL, &msg)
+	err := slack.PostWebhook(c.WebhookURL, &msg)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -93,6 +102,8 @@ func (e *Executor) initRoot() {
 	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.SlackAPIType, "apiType", "",
 		SlackAPITypeWebhook, "slack api type")
 	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.WebhookURL, "webhookUrl", "", "", "slack webhook url")
+	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.Username, "username", "u", "", "slack webhook username")
+	e.rootCmd.PersistentFlags().BoolVarP(&e.SlackConfig.Verbose, "verbose", "v", false, "verbose output")
 }
 
 // CLI init function.
@@ -169,6 +180,12 @@ func (e *Executor) readConfig() {
 	if e.SlackConfig.WebhookURL != "" {
 		slackConf.WebhookURL = e.SlackConfig.WebhookURL
 	}
+
+	if e.SlackConfig.Username != "" {
+		slackConf.Username = e.SlackConfig.Username
+	}
+
+	slackConf.Verbose = e.SlackConfig.Verbose
 
 	e.SlackConfig = slackConf
 }
