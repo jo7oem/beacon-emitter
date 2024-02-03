@@ -20,12 +20,15 @@ lint: $(DEV_BIN)/golangci-lint
 	$(DEV_BIN)/golangci-lint run --config=.golangci.yml
 
 .PHONY: setup
-setup: $(DEV_BIN)/golangci-lint $(DEV_BIN)/wsl $(DEV_BIN)/cobra-cli
+setup: $(DEV_BIN)/golangci-lint $(DEV_BIN)/wsl $(DEV_BIN)/cobra-cli $(DEV_BIN)/goreleaser
 
 $(DEV_BIN)/golangci-lint:
 	mkdir -p $(@D)
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(@D) v1.55.2
 
+$(DEV_BIN)/goreleaser:
+	mkdir -p $(@D)
+	GOBIN=$(ABS_DEV_BIN) go install github.com/goreleaser/goreleaser@latest
 
 $(DEV_BIN)/wsl:
 	mkdir -p $(@D)

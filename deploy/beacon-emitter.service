@@ -1,0 +1,15 @@
+[Unit]
+Description=Send to slack about IP address
+After=network.target
+Wants=network-online.target
+AssertUser=beacon-emitter
+AssertGroup=beacon-emitter
+
+[Service]
+Restart=no
+Type=oneshot
+ExecStart=/usr/bin/beacon-emitter
+Environment='TEST=test'
+
+[Install]
+WantedBy=multi-user.target
