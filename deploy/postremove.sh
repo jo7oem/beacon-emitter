@@ -1,4 +1,7 @@
 #!/bin/sh
+if [ -e /etc/bash_completion.d/beacon-emitter ]; then
+  rm -f /etc/bash_completion.d/beacon-emitter
+fi
 
 if [ "$1" != "remove" ]; then
 	exit 0
@@ -10,5 +13,8 @@ if ! type systemctl > /dev/null 2>&1; then
 fi
 
 systemctl daemon-reload
-userdel  beacon-emitter || true
-groupdel beacon-emitter 2>/dev/null || true
+
+if id beacon-emitter > /dev/null 2>&1; then
+  userdel  beacon-emitter || true
+  groupdel beacon-emitter 2>/dev/null || true
+fi
