@@ -9,11 +9,9 @@ if ! type systemctl > /dev/null 2>&1; then
   exit 0
 fi
 
-if ! id beacon-emitter > /dev/null 2>&1; then
-  groupadd --system beacon-emitter || true
-  useradd --system -d /nonexistent -s /usr/sbin/nologin -g beacon-emitter beacon-emitter || true
+groupadd --system beacon-emitter || true
+useradd --system -d /nonexistent -s /usr/sbin/nologin -g beacon-emitter beacon-emitter || true
 
-  chown beacon-emitter /etc/beacon-emitter/config.yml
-fi
+chown beacon-emitter /etc/beacon-emitter/config.yml
 
 systemctl daemon-reload

@@ -14,7 +14,5 @@ fi
 
 systemctl daemon-reload
 
-if id beacon-emitter > /dev/null 2>&1; then
-  userdel  beacon-emitter || true
-  groupdel beacon-emitter 2>/dev/null || true
-fi
+userdel  beacon-emitter || true
+groupdel beacon-emitter 2>/dev/null || true
