@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/slack-go/slack"
@@ -22,6 +23,15 @@ const (
 	CommandNameReport   = "report"
 	CommandNameSend     = "send"
 )
+
+func getVersion() string {
+	i, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "dev"
+	}
+
+	return i.Main.Version
+}
 
 type Config struct {
 	SlackAPIType string `yaml:"slackApiType"`
@@ -116,6 +126,14 @@ func (e *Executor) initRoot() {
 
 // CLI init function.
 func (e *Executor) initSubcommands() {
+	version := &cobra.Command{
+		Use:   "version",
+		Short: "print version information",
+		Run:   e.Version,
+	}
+
+	e.rootCmd.AddCommand(version)
+
 	send := &cobra.Command{
 		Use:   "send [args]",
 		Short: "send message",
@@ -320,6 +338,10 @@ func (e *Executor) Batch(cmd *cobra.Command, _ []string) {
 		cmd.PrintErrln("unknown action")
 		os.Exit(1)
 	}
+}
+
+func (e *Executor) Version(_ *cobra.Command, _ []string) {
+	fmt.Println(getVersion())
 }
 
 func main() {
