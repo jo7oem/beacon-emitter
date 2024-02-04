@@ -1,0 +1,7 @@
+#slackApiType: webhook
+# dummy is not sending slack message
+slackApiType: dummy
+#webhookUrl is slack webhook url ex.) https://hooks.slack.com/services/~~~~~
+webhookUrl:  ""
+#action is batch mode action.
+action: "report"

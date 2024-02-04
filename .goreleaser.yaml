@@ -54,6 +54,9 @@ nfpms:
       # main systemd unit
       - src: deploy/beacon-emitter.service
         dst: /lib/systemd/system/beacon-emitter.service
+      # instance systemd unit
+      - src: deploy/beacon-emitter@.service
+        dst: /lib/systemd/system/beacon-emitter@.service
       # config sample
       - src: deploy/config.yml
         dst: /etc/beacon-emitter/config.yaml

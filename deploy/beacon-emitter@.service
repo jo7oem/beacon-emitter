@@ -8,7 +8,7 @@ AssertGroup=beacon-emitter
 [Service]
 Restart=no
 Type=oneshot
-ExecStart=/usr/bin/beacon-emitter --config /etc/beacon-emitter/config.yml batch
+ExecStart=/usr/bin/beacon-emitter --config /etc/beacon-emitter/%i.yml batch
 
 [Install]
 WantedBy=multi-user.target
