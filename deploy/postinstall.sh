@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if ! type bash > /dev/null 2>&1; then
+if type bash > /dev/null 2>&1; then
   beacon-emitter completion bash > /etc/bash_completion.d/beacon-emitter
 fi
 
