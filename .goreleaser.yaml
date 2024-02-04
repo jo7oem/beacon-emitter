@@ -59,7 +59,7 @@ nfpms:
         dst: /lib/systemd/system/beacon-emitter@.service
       # config sample
       - src: deploy/config.yml
-        dst: /etc/beacon-emitter/config.yaml
+        dst: /etc/beacon-emitter/config.yml
 
     scripts:
       postinstall:  deploy/postinstall.sh
