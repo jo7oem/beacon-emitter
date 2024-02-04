@@ -18,6 +18,9 @@ import (
 
 const (
 	SlackAPITypeWebhook = "webhook"
+	SlackAPITypeDummy   = "dummy"
+	CommandNameReport   = "report"
+	CommandNameSend     = "send"
 )
 
 type Config struct {
@@ -25,19 +28,24 @@ type Config struct {
 	WebhookURL   string `yaml:"webhookUrl"`
 	Username     string `yaml:"username"`
 	Verbose      bool   `yaml:"verbose"`
+	Action       string `yaml:"action"`
 }
 
 func (c *Config) send(str string) error {
+	if c.Verbose {
+		fmt.Println(str)
+	}
+
+	if c.SlackAPIType == SlackAPITypeDummy {
+		return nil
+	}
+
 	if c.Username == "" {
 		if hostname, err := os.Hostname(); err != nil {
 			c.Username = "unknown"
 		} else {
 			c.Username = hostname
 		}
-	}
-
-	if c.Verbose {
-		fmt.Println(str)
 	}
 
 	msg := slack.WebhookMessage{
@@ -67,8 +75,8 @@ func (c *Config) send(str string) error {
 type Executor struct {
 	rootCmd *cobra.Command
 
-	ConfigPath  string
-	SlackConfig Config
+	ConfigPath string
+	Config     Config
 }
 
 func NewExecutor() *Executor {
@@ -82,7 +90,7 @@ func NewExecutor() *Executor {
 }
 
 func (e *Executor) Execute() error {
-	return e.rootCmd.Execute() //nolint:wrapcheck
+	return e.rootCmd.Execute() // nolint:wrapcheck
 }
 
 func (e *Executor) initRoot() {
@@ -95,15 +103,15 @@ func (e *Executor) initRoot() {
 - 引数の内容を通知
 - 標準入力から受けた内容を通知
 `,
-		Run: e.echo,
+		Run: nil,
 	}
 
 	e.rootCmd.PersistentFlags().StringVarP(&e.ConfigPath, "config", "c", "", "config file path")
-	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.SlackAPIType, "apiType", "",
-		SlackAPITypeWebhook, "slack api type")
-	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.WebhookURL, "webhookUrl", "", "", "slack webhook url")
-	e.rootCmd.PersistentFlags().StringVarP(&e.SlackConfig.Username, "username", "u", "", "slack webhook username")
-	e.rootCmd.PersistentFlags().BoolVarP(&e.SlackConfig.Verbose, "verbose", "v", false, "verbose output")
+	e.rootCmd.PersistentFlags().StringVarP(&e.Config.SlackAPIType, "apiType", "",
+		"", "slack api type")
+	e.rootCmd.PersistentFlags().StringVarP(&e.Config.WebhookURL, "webhookUrl", "", "", "slack webhook url")
+	e.rootCmd.PersistentFlags().StringVarP(&e.Config.Username, "username", "u", "", "slack webhook username")
+	e.rootCmd.PersistentFlags().BoolVarP(&e.Config.Verbose, "verbose", "v", false, "verbose output")
 }
 
 // CLI init function.
@@ -122,8 +130,16 @@ func (e *Executor) initSubcommands() {
 		Run:   e.Report,
 	}
 	e.rootCmd.AddCommand(report)
+
+	batch := &cobra.Command{
+		Use:   "batch ",
+		Short: "batch mode",
+		Run:   e.Batch,
+	}
+	e.rootCmd.AddCommand(batch)
 }
 
+// nolint:cyclop
 func (e *Executor) readConfig() {
 	if e.ConfigPath == "" {
 		return
@@ -173,33 +189,32 @@ func (e *Executor) readConfig() {
 		return
 	}
 
-	if e.SlackConfig.SlackAPIType != "" {
-		slackConf.SlackAPIType = e.SlackConfig.SlackAPIType
+	if e.Config.SlackAPIType != "" {
+		slackConf.SlackAPIType = e.Config.SlackAPIType
 	}
 
-	if e.SlackConfig.WebhookURL != "" {
-		slackConf.WebhookURL = e.SlackConfig.WebhookURL
+	if e.Config.WebhookURL == "" && slackConf.WebhookURL == "" {
+		e.Config.WebhookURL = SlackAPITypeWebhook
 	}
 
-	if e.SlackConfig.Username != "" {
-		slackConf.Username = e.SlackConfig.Username
+	if e.Config.WebhookURL != "" {
+		slackConf.WebhookURL = e.Config.WebhookURL
 	}
 
-	slackConf.Verbose = e.SlackConfig.Verbose
+	if e.Config.Username != "" {
+		slackConf.Username = e.Config.Username
+	}
 
-	e.SlackConfig = slackConf
-}
+	slackConf.Verbose = e.Config.Verbose
 
-func (e *Executor) echo(_ *cobra.Command, args []string) {
-	fmt.Println(e.ConfigPath)
-	fmt.Println("Args: ", args)
+	e.Config = slackConf
 }
 
 func (e *Executor) send(cmd *cobra.Command, args []string) {
 	if len(args) != 0 {
 		fmt.Println(args)
 
-		if err := e.SlackConfig.send(strings.Join(args, "\n")); err != nil {
+		if err := e.Config.send(strings.Join(args, "\n")); err != nil {
 			cmd.PrintErrln(err)
 
 			os.Exit(1)
@@ -235,7 +250,7 @@ func (e *Executor) send(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if err := e.SlackConfig.send(text); err != nil {
+	if err := e.Config.send(text); err != nil {
 		cmd.PrintErrln(err)
 
 		os.Exit(1)
@@ -278,10 +293,32 @@ func (e *Executor) Report(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	if err := e.SlackConfig.send(string(yml)); err != nil {
+	if err := e.Config.send(string(yml)); err != nil {
 		cmd.PrintErrln(err)
 
 		return
+	}
+}
+
+func (e *Executor) Batch(cmd *cobra.Command, _ []string) {
+	switch e.Config.Action {
+	case "":
+		cmd.PrintErrln("action is not set")
+		os.Exit(1)
+
+	case CommandNameReport:
+		e.Report(cmd, nil)
+
+		return
+
+	case CommandNameSend:
+		e.send(cmd, nil)
+
+		return
+
+	default:
+		cmd.PrintErrln("unknown action")
+		os.Exit(1)
 	}
 }
 
