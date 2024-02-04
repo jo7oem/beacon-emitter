@@ -1,0 +1,12 @@
+services:
+  ubuntu:
+    image: ubuntu:22.04
+    volumes:
+      - ./dist:/dist
+    command: tail -f /dev/null
+
+  rockey:
+    image: rockylinux:9
+    volumes:
+      - ./dist:/dist
+    command: tail -f /dev/null
