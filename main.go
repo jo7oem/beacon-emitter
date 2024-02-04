@@ -90,7 +90,7 @@ func NewExecutor() *Executor {
 }
 
 func (e *Executor) Execute() error {
-	return e.rootCmd.Execute() // nolint:wrapcheck
+	return e.rootCmd.Execute() //nolint:wrapcheck
 }
 
 func (e *Executor) initRoot() {
@@ -139,7 +139,7 @@ func (e *Executor) initSubcommands() {
 	e.rootCmd.AddCommand(batch)
 }
 
-// nolint:cyclop
+//nolint:cyclop
 func (e *Executor) readConfig() {
 	if e.ConfigPath == "" {
 		return
