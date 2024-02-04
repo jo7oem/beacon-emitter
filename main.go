@@ -24,7 +24,13 @@ const (
 	CommandNameSend     = "send"
 )
 
+var version string
+
 func getVersion() string {
+	if version != "" {
+		return version
+	}
+
 	i, ok := debug.ReadBuildInfo()
 	if !ok {
 		return "dev"
