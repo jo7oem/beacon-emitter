@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{env.GO_VERSION}}
+      - name: go mod download
+        run: go mod download
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
