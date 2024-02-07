@@ -35,7 +35,8 @@ snapshot:
   name_template: SNAPSHOT-{{ .ShortCommit }}
 
 nfpms:
-  - vendor:       Shohei Umetsu
+  - id: default
+    vendor:       Shohei Umetsu
     homepage:     "https://github.com/jo7oem/beacon-emitter"
     maintainer:   Shohei Umetsu
     description:  "Send to slack about IP address "
@@ -66,7 +67,7 @@ nfpms:
       postremove:   deploy/postremove.sh
     rpm:
       signature:
-        key_file: "{{ .Env.GPG_KEY_PATH }}"
+        key_file: build_key.gpg
 
 
 changelog:
