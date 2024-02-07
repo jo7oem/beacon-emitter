@@ -64,6 +64,9 @@ nfpms:
     scripts:
       postinstall:  deploy/postinstall.sh
       postremove:   deploy/postremove.sh
+    rpm:
+      signature:
+        key_file: "{{ .Env.GPG_KEY_PATH }}"
 
 
 changelog:
