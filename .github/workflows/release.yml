@@ -27,6 +27,12 @@ jobs:
          - name: save gpg key
            run: echo "${BUILD_GPG_KEY}" > $GPG_KEY_PATH
 
+         - name: pwd
+           run: pwd
+
+         - name: ls
+           run: ls -la
+
          - name: Run GoReleaser
            uses: goreleaser/goreleaser-action@v4
            with:
