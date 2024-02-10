@@ -22,5 +22,6 @@ go.work
 /dev_tools/bin/
 /tmp
 /beacon-emitter.yaml
+build_key.gpg
 
 dist/

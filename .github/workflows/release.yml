@@ -11,6 +11,10 @@ jobs:
      goreleaser:
        name: Create Release
        runs-on: ubuntu-latest
+       env:
+         BUILD_GPG_KEY: ${{ secrets.GPG_KEY }}
+         NFPM_DEFAULT_RPM_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+         GPG_KEY_PATH: "build_key.gpg"
        steps:
          - name: Checkout code
            uses: actions/checkout@v3
@@ -20,9 +24,15 @@ jobs:
            with:
              go-version: ${{env.GO_VERSION}}
 
+         - name: save gpg key
+           run: echo "${BUILD_GPG_KEY}" | base64 -d > $GPG_KEY_PATH
+
          - name: Run GoReleaser
            uses: goreleaser/goreleaser-action@v4
            with:
              args: release
            env:
              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+         - name: Clean up
+           run: rm -f $GPG_KEY_PATH
