@@ -6,6 +6,7 @@ Wants=network-online.target
 [Service]
 Restart=no
 Type=oneshot
+RemainAfterExit=yes
 ExecStart=/usr/bin/beacon-emitter --config /etc/beacon-emitter/config.yml batch
 User=beacon-emitter
 Group=beacon-emitter
