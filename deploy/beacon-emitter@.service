@@ -2,13 +2,13 @@
 Description=Send to slack about IP address
 After=network.target
 Wants=network-online.target
-AssertUser=beacon-emitter
-AssertGroup=beacon-emitter
 
 [Service]
 Restart=no
 Type=oneshot
 ExecStart=/usr/bin/beacon-emitter --config /etc/beacon-emitter/%i.yml batch
+User=beacon-emitter
+Group=beacon-emitter
 
 [Install]
 WantedBy=multi-user.target
